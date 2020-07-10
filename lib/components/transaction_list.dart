@@ -4,58 +4,73 @@ import 'package:intl/intl.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> transactions;
+  final void Function(String) onRemove;
 
-  TransactionList({Key key, this.transactions}) : super(key: key);
+  TransactionList(this.transactions, this.onRemove);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: transactions.map((e) {
-        return Card(
-          child: Row(
-            children: <Widget>[
-              Container(
+    return transactions.isEmpty
+        ? LayoutBuilder(builder: (_, constraints) {
+            return Column(
+              children: <Widget>[
+                SizedBox(
+                  height: 20,
+                ),
+                Container(
+                  height: 20,
+                  child: Text(
+                    'Nenhuma transação cadastrada',
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Container(
+                  height: constraints.maxHeight * .6,
+                  child: Image.asset(
+                    'assets/images/waiting.png',
+                    fit: BoxFit.cover,
+                  ),
+                )
+              ],
+            );
+          })
+        : ListView.builder(
+            itemCount: transactions.length,
+            itemBuilder: (_, index) {
+              final e = transactions[index];
+              return Card(
+                elevation: 5,
                 margin: EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 10,
+                  vertical: 4,
+                  horizontal: 10,
                 ),
-                decoration: BoxDecoration(
-                    border: Border.all(
-                  color: Colors.purple,
-                  width: 2,
-                )),
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  'R\$ ' + e.value.toStringAsFixed(2).replaceAll('.', ','),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.purple,
+                child: ListTile(
+                  leading: CircleAvatar(
+                    radius: 30,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: FittedBox(
+                        child: Text('R\$${e.value.toStringAsFixed(2)}'),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
+                  title: Text(
                     e.title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.headline6,
                   ),
-                  Text(
-                    DateFormat('d MMM y').format(e.date),
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  )
-                ],
-              )
-            ],
-          ),
-        );
-      }).toList(),
-    );
+                  subtitle: Text(DateFormat('d MMM y').format(e.date)),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    color: Theme.of(context).errorColor,
+                    onPressed: () {
+                      onRemove(e.id);
+                    },
+                  ),
+                ),
+              );
+            });
   }
 }
